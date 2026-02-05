@@ -1,0 +1,6 @@
+@GestorHeroesRPG_HostAddress = http://localhost:5223
+
+GET {{GestorHeroesRPG_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
