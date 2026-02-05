@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 namespace GestorHeroesRPG.Model;
 
 [Table("character")]
-public abstract class Personaje
+public class Personaje
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
