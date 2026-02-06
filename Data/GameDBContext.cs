@@ -25,6 +25,15 @@ public class GameDBContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.HasDefaultSchema("game");
+
+        modelBuilder.Entity<Personaje>().ToTable("character");
+        modelBuilder.Entity<Guerrero>().ToTable("warrior");
+        modelBuilder.Entity<Mago>().ToTable("mage");
+        modelBuilder.Entity<Arquero>().ToTable("archer");
+        modelBuilder.Entity<Clerigo>().ToTable("cleric");
+        modelBuilder.Entity<Personaje>()
+        .Property(p => p.Rasgos)
+        .HasColumnType("jsonb");
     }
 
     public DbSet<Personaje> Personajes { get; set; }
