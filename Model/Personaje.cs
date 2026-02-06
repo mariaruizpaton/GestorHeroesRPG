@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Runtime.InteropServices;
+using System.Text.Json;
 
 namespace GestorHeroesRPG.Model;
 
 [Table("character")]
-public class Personaje
+public abstract class Personaje
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -15,7 +15,7 @@ public class Personaje
     [Required]
     [StringLength(50)]
     [Column("name")]
-    public string Nombre { get; set; } = string.Empty;
+    public string Nombre { get; set; } = null!;
 
     [Range(1, 100)]
     [Column("level")]
@@ -23,8 +23,11 @@ public class Personaje
 
     [Required]
     [Column("creation_date")]
-    public DateOnly FechaCreation { get; set; }
+    public DateTime FechaCreation { get; set; }
 
     [Column("guild")]
-    public string Gremio { get; set; } = string.Empty;
+    public string? Gremio { get; set; }
+
+    /*[Column("traits", TypeName = "jsonb")]
+    public JsonElement Rasgos { get; set; }*/
 }
