@@ -9,7 +9,7 @@ var connectionString = builder.Configuration.GetConnectionString("GameConn");
 
 // 2. Crear un DataSource que habilite el JSON dinámico
 var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
-dataSourceBuilder.EnableDynamicJson(); // <--- Esta es la clave
+dataSourceBuilder.EnableDynamicJson();
 var dataSource = dataSourceBuilder.Build();
 
 // 3. Inyectar el DbContext usando el DataSource configurado
