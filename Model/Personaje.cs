@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace GestorHeroesRPG.Model;
 
@@ -28,6 +29,6 @@ public abstract class Personaje
     [Column("guild")]
     public string? Gremio { get; set; }
 
-    /*[Column("traits", TypeName = "jsonb")]
-    public JsonElement Rasgos { get; set; }*/
+    [Column("traits", TypeName = "jsonb")]
+    public JsonNode? Rasgos { get; set; }
 }
