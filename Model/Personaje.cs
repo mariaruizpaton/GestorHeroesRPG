@@ -18,7 +18,6 @@ namespace GestorHeroesRPG.Model;
 /// <remarks>
 /// <para><b>Autor:</b> María</para>
 /// <para><b>Versión:</b> 1.0 (Compatible con .NET 9)</para>
-/// <para><b>Estrategia BD:</b> TPT (Table Per Type) - Mapea a la tabla principal 'character'.</para>
 /// </remarks>
 [JsonDerivedType(typeof(Guerrero), typeDiscriminator: "guerrero")]
 [JsonDerivedType(typeof(Mago), typeDiscriminator: "mago")]
