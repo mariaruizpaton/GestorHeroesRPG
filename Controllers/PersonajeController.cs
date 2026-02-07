@@ -16,6 +16,47 @@ public class PersonajeController : ControllerBase
         _context = context;
     }
 
+    /// <summary>
+    /// Agrupación Polimórfica: Resumen de cantidad de personajes por tipo y sus medias de nivel.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Autor:</b> Liviu</para>
+    /// </remarks>
+    [HttpGet("resumen-tipo")]
+    public async Task<IActionResult> GetResumenPorTipo()
+    {
+        // En .NET 9, EF traduce GetType().Name a la jerarquía TPT de forma nativa
+        var resumen = await _context.Personajes
+            .GroupBy(p => p.GetType().Name)
+            .Select(g => new
+            {
+                Tipo = g.Key,
+                Cantidad = g.Count(),
+                MediaNivel = g.Average(p => p.Nivel)
+            })
+            .ToListAsync();
+
+        return Ok(resumen);
+    }
+
+    /// <summary>
+    /// Búsqueda Multitabla: Obtener personajes de tipo Clerigo O Mago con nivel > 50 ordenados por fecha.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Autor:</b> Liviu</para>
+    /// </remarks>
+    [HttpGet("filtrado-especial")]
+    public async Task<ActionResult<IEnumerable<Personaje>>> GetEspecialistasAltos()
+    {
+        // EF Core realiza los JOINs automáticos con las tablas 'cleric' y 'mage'
+        var personajes = await _context.Personajes
+            .Where(p => (p is Clerigo || p is Mago) && p.Nivel > 50)
+            .OrderBy(p => p.FechaCreation)
+            .ToListAsync();
+
+        return Ok(personajes);
+    }
+
     [HttpGet(Name = "GetCharacter")]
     public async Task<ActionResult<IEnumerable<Personaje>>> GetPersonajes()
     {

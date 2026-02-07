@@ -26,6 +26,7 @@ public class GameDBContext : DbContext
 
         modelBuilder.HasDefaultSchema("game");
 
+        /// <para><b>Autor:</b> Liviu</para>
         modelBuilder.Entity<Personaje>().ToTable("character");
         modelBuilder.Entity<Guerrero>().ToTable("warrior");
         modelBuilder.Entity<Mago>().ToTable("mage");

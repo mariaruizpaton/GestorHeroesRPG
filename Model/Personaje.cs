@@ -14,15 +14,17 @@ namespace GestorHeroesRPG.Model;
 /// <para><b>Estrategia BD:</b> TPT (Table Per Type) - Mapea a la tabla principal 'character'.</para>
 /// </remarks>
 [Table("character")]
-// Configuración de Polimorfismo: Permite a la API serializar/deserializar subclases automáticamente
+/// Configuración de Polimorfismo: Permite a la API serializar/deserializar subclases automáticamente
 /// <remarks>
 /// <para><b>Autor:</b> María</para>
-/// <para><b>Versión:</b> 1.0 (Compatible con .NET 9)</para>
 /// </remarks>
 [JsonDerivedType(typeof(Guerrero), typeDiscriminator: "guerrero")]
 [JsonDerivedType(typeof(Mago), typeDiscriminator: "mago")]
 [JsonDerivedType(typeof(Arquero), typeDiscriminator: "arquero")]
 [JsonDerivedType(typeof(Clerigo), typeDiscriminator: "clerigo")]
+/// <remarks>
+/// <para><b>Autor:</b> Liviu</para>
+/// </remarks>
 public abstract class Personaje
 {
     /// <summary>
