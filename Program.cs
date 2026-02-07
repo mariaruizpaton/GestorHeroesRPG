@@ -7,7 +7,14 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. Obtener la cadena de conexión
 var connectionString = builder.Configuration.GetConnectionString("GameConn");
 
-// 2. Crear un DataSource que habilite el JSON dinámico
+/// <summary>
+/// Configuración del DataSource de Npgsql para habilitar capacidades avanzadas.
+/// </summary>
+/// <remarks>
+/// <b>Autor:</b> Maria <br/>
+/// Se utiliza NpgsqlDataSourceBuilder para permitir que el campo 'Rasgos' (jsonb) 
+/// se asocie dinámicamente con tipos de System.Text.Json sin necesidad de mapeos rígidos.
+/// </remarks>
 var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
 dataSourceBuilder.EnableDynamicJson();
 var dataSource = dataSourceBuilder.Build();
@@ -23,6 +30,7 @@ builder.Services.AddControllers()
         // sin problemas con los tipos dinámicos de System.Text.Json
         options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
     });
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

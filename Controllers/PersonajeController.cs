@@ -5,6 +5,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GestorHeroesRPG.Controllers;
 
+/// <summary>
+/// Controlador principal para la gestión de personajes y sus clases derivadas.
+/// </summary>
+/// <remarks>
+/// <b>Autor:</b> Maria
+/// </remarks>
 [ApiController]
 [Route("api/[controller]")]
 public class PersonajeController : ControllerBase
@@ -64,12 +70,25 @@ public class PersonajeController : ControllerBase
         return Ok(personajes);
     }
 
+    /// <summary>
+    /// Obtiene la lista completa de personajes (polimórfica).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Autor:</b> Maria</para>
+    /// </remarks>
     [HttpGet(Name = "GetCharacter")]
     public async Task<ActionResult<IEnumerable<Personaje>>> GetPersonajes()
     {
         return await _context.Personajes.ToListAsync();
     }
 
+    /// <summary>
+    /// Busca un personaje específico por su identificador único.
+    /// </summary>
+    /// <param name="id">ID del personaje.</param>
+    /// <remarks>
+    /// <para><b>Autor:</b> Maria</para>
+    /// </remarks>
     [HttpGet("{id}")]
     public async Task<ActionResult<Personaje>> GetPersonajeId(int id)
     {
@@ -81,11 +100,16 @@ public class PersonajeController : ControllerBase
         return personaje;
     }
 
+    /// <summary>
+    /// Endpoint global para crear cualquier tipo de personaje mediante deserialización polimórfica.
+    /// </summary>
+    /// <param name="personaje">Objeto personaje (Guerrero, Mago, etc.).</param>
+    /// <remarks>
+    /// <para><b>Autor:</b> Maria</para>
+    /// </remarks>
     [HttpPost]
     public async Task<ActionResult<Personaje>> PostPersonaje(Personaje personaje)
     {
-        // EF Core detecta automáticamente el tipo real (Guerrero, Mago, etc.) 
-        // gracias a la configuración de la jerarquía TPT.
         _context.Personajes.Add(personaje);
 
         try
@@ -97,10 +121,15 @@ public class PersonajeController : ControllerBase
             return BadRequest($"Error al crear el personaje: {ex.Message}");
         }
 
-        // Usamos el nombre del método GET individual para el Location header
         return CreatedAtAction(nameof(GetPersonajeId), new { id = personaje.Id }, personaje);
     }
 
+    /// <summary>
+    /// Crea un nuevo personaje de clase Guerrero.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Autor:</b> Maria</para>
+    /// </remarks>
     [HttpPost("guerrero")]
     public async Task<ActionResult<Guerrero>> PostGuerrero(Guerrero guerrero)
     {
@@ -109,6 +138,12 @@ public class PersonajeController : ControllerBase
         return CreatedAtAction("GetCharacter", new { id = guerrero.Id }, guerrero);
     }
 
+    /// <summary>
+    /// Crea un nuevo personaje de clase Mago.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Autor:</b> Maria</para>
+    /// </remarks>
     [HttpPost("mago")]
     public async Task<ActionResult<Mago>> PostMago(Mago mago)
     {
@@ -117,6 +152,12 @@ public class PersonajeController : ControllerBase
         return CreatedAtAction("GetPersonajes", new { id = mago.Id }, mago);
     }
 
+    /// <summary>
+    /// Crea un nuevo personaje de clase Arquero.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Autor:</b> Maria</para>
+    /// </remarks>
     [HttpPost("arquero")]
     public async Task<ActionResult<Arquero>> PostArquero(Arquero arquero)
     {
@@ -125,6 +166,12 @@ public class PersonajeController : ControllerBase
         return CreatedAtAction("GetPersonajes", new { id = arquero.Id }, arquero);
     }
 
+    /// <summary>
+    /// Crea un nuevo personaje de clase Clérigo.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Autor:</b> Maria</para>
+    /// </remarks>
     [HttpPost("clerigo")]
     public async Task<ActionResult<Clerigo>> PostClerigo(Clerigo clerigo)
     {
@@ -133,16 +180,22 @@ public class PersonajeController : ControllerBase
         return CreatedAtAction("GetPersonajes", new { id = clerigo.Id }, clerigo);
     }
 
+    /// <summary>
+    /// Actualiza los datos de un personaje existente.
+    /// </summary>
+    /// <param name="id">ID del personaje a modificar.</param>
+    /// <param name="personaje">Datos actualizados.</param>
+    /// <remarks>
+    /// <para><b>Autor:</b> Maria</para>
+    /// </remarks>
     [HttpPut("{id}")]
     public async Task<IActionResult> PutPersonaje(int id, [FromBody] Personaje personaje)
     {
-        // Verificamos que el ID de la URL coincida con el ID del cuerpo
         if (id != personaje.Id)
         {
             return BadRequest("El ID no coincide");
         }
 
-        // Marcamos la entidad como modificada. EF Core detectará el tipo real (Guerrero, etc.)
         _context.Entry(personaje).State = EntityState.Modified;
 
         try
@@ -161,22 +214,26 @@ public class PersonajeController : ControllerBase
             }
         }
 
-        return NoContent(); // 204: Éxito sin contenido de retorno
+        return NoContent();
     }
 
+    /// <summary>
+    /// Elimina un personaje de la base de datos.
+    /// </summary>
+    /// <param name="id">ID del personaje a eliminar.</param>
+    /// <remarks>
+    /// <para><b>Autor:</b> Maria</para>
+    /// </remarks>
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeletePersonaje(int id)
     {
-        // Buscamos el personaje en la base de datos
         var personaje = await _context.Personajes.FindAsync(id);
 
-        // Si no existe, devolvemos 404
         if (personaje == null)
         {
             return NotFound($"No se encontró el personaje con ID {id}.");
         }
 
-        // Eliminamos la entidad. EF Core detecta si es Guerrero, Mago, etc.
         _context.Personajes.Remove(personaje);
 
         try
@@ -188,6 +245,6 @@ public class PersonajeController : ControllerBase
             return BadRequest($"Error al eliminar: {ex.Message}");
         }
 
-        return NoContent(); // Respuesta estándar 204 para eliminaciones exitosas
+        return NoContent();
     }
 }
