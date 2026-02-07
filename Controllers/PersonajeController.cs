@@ -33,6 +33,26 @@ public class PersonajeController : ControllerBase
         return personaje;
     }
 
+    [HttpPost]
+    public async Task<ActionResult<Personaje>> PostPersonaje(Personaje personaje)
+    {
+        // EF Core detecta automáticamente el tipo real (Guerrero, Mago, etc.) 
+        // gracias a la configuración de la jerarquía TPT.
+        _context.Personajes.Add(personaje);
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest($"Error al crear el personaje: {ex.Message}");
+        }
+
+        // Usamos el nombre del método GET individual para el Location header
+        return CreatedAtAction(nameof(GetPersonajeId), new { id = personaje.Id }, personaje);
+    }
+
     [HttpPost("guerrero")]
     public async Task<ActionResult<Guerrero>> PostGuerrero(Guerrero guerrero)
     {
