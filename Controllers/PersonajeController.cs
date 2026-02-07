@@ -27,14 +27,14 @@ public class PersonajeController : ControllerBase
     {
         // En .NET 9, EF traduce GetType().Name a la jerarquía TPT de forma nativa
         var resumen = await _context.Personajes
-            .GroupBy(p => p.GetType().Name)
-            .Select(g => new
-            {
-                Tipo = g.Key,
-                Cantidad = g.Count(),
-                MediaNivel = g.Average(p => p.Nivel)
-            })
-            .ToListAsync();
+                .GroupBy(p => EF.Property<string>(p, "Discriminator"))
+                .Select(g => new
+                {
+                    Tipo = g.Key,
+                    Cantidad = g.Count(),
+                    MediaNivel = g.Average(p => p.Nivel)
+                })
+                .ToListAsync();
 
         return Ok(resumen);
     }
