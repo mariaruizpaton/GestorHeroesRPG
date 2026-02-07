@@ -25,16 +25,23 @@ public class PersonajeController : ControllerBase
     [HttpGet("resumen-tipo")]
     public async Task<IActionResult> GetResumenPorTipo()
     {
-        // En .NET 9, EF traduce GetType().Name a la jerarquía TPT de forma nativa
         var resumen = await _context.Personajes
-                .GroupBy(p => EF.Property<string>(p, "Discriminator"))
-                .Select(g => new
-                {
-                    Tipo = g.Key,
-                    Cantidad = g.Count(),
-                    MediaNivel = g.Average(p => p.Nivel)
-                })
-                .ToListAsync();
+            .Select(p => new
+            {
+                TipoLabel = p is Guerrero ? "Guerrero" :
+                            p is Mago ? "Mago" :
+                            p is Arquero ? "Arquero" :
+                            p is Clerigo ? "Clerigo" : "Personaje",
+                p.Nivel
+            })
+            .GroupBy(x => x.TipoLabel)
+            .Select(g => new
+            {
+                Tipo = g.Key,
+                Cantidad = g.Count(),
+                MediaNivel = g.Average(x => x.Nivel)
+            })
+            .ToListAsync();
 
         return Ok(resumen);
     }
