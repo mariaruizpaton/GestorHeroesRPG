@@ -52,6 +52,10 @@ public class GameDBContext : DbContext
         modelBuilder.Entity<Personaje>()
             .Property(p => p.Rasgos)
             .HasColumnType("jsonb");
+
+        modelBuilder.Entity<Personaje>()
+        .HasIndex(p => p.Nombre)
+        .IsUnique();
     }
 
     /// <summary>

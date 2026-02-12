@@ -57,6 +57,9 @@ namespace GestorHeroesRPG.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Nombre")
+                        .IsUnique();
+
                     b.ToTable("character", "game");
 
                     b.UseTptMappingStrategy();

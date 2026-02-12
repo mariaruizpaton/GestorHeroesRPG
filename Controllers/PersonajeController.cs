@@ -12,7 +12,7 @@ namespace GestorHeroesRPG.Controllers;
 /// <b>Autor:</b> Maria
 /// </remarks>
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class PersonajeController : ControllerBase
 {
     private readonly GameDBContext _context;
@@ -110,6 +110,12 @@ public class PersonajeController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Personaje>> PostPersonaje(Personaje personaje)
     {
+        // Usamos el método privado para mantener la coherencia en toda la API
+        if (await NombreExiste(personaje.Nombre))
+        {
+            return BadRequest($"El nombre '{personaje.Nombre}' ya está en uso por otro héroe.");
+        }
+
         _context.Personajes.Add(personaje);
 
         try
@@ -125,7 +131,7 @@ public class PersonajeController : ControllerBase
     }
 
     /// <summary>
-    /// Crea un nuevo personaje de clase Guerrero.
+    /// Crea un nuevo personaje de clase Guerrero con validación de nombre único.
     /// </summary>
     /// <remarks>
     /// <para><b>Autor:</b> Maria</para>
@@ -133,13 +139,18 @@ public class PersonajeController : ControllerBase
     [HttpPost("guerrero")]
     public async Task<ActionResult<Guerrero>> PostGuerrero(Guerrero guerrero)
     {
+        if (await NombreExiste(guerrero.Nombre))
+        {
+            return BadRequest($"El nombre '{guerrero.Nombre}' ya está en uso por otro mago o personaje.");
+        }
+
         _context.Guerreros.Add(guerrero);
         await _context.SaveChangesAsync();
         return CreatedAtAction("GetCharacter", new { id = guerrero.Id }, guerrero);
     }
 
     /// <summary>
-    /// Crea un nuevo personaje de clase Mago.
+    /// Crea un nuevo personaje de clase Mago con validación de nombre único.
     /// </summary>
     /// <remarks>
     /// <para><b>Autor:</b> Maria</para>
@@ -147,13 +158,18 @@ public class PersonajeController : ControllerBase
     [HttpPost("mago")]
     public async Task<ActionResult<Mago>> PostMago(Mago mago)
     {
+        if (await NombreExiste(mago.Nombre))
+        {
+            return BadRequest($"El nombre '{mago.Nombre}' ya está en uso por otro mago o personaje.");
+        }
+
         _context.Magos.Add(mago);
         await _context.SaveChangesAsync();
         return CreatedAtAction("GetPersonajes", new { id = mago.Id }, mago);
     }
 
     /// <summary>
-    /// Crea un nuevo personaje de clase Arquero.
+    /// Crea un nuevo personaje de clase Arquero con validación de nombre único.
     /// </summary>
     /// <remarks>
     /// <para><b>Autor:</b> Maria</para>
@@ -161,13 +177,18 @@ public class PersonajeController : ControllerBase
     [HttpPost("arquero")]
     public async Task<ActionResult<Arquero>> PostArquero(Arquero arquero)
     {
+        if (await NombreExiste(arquero.Nombre))
+        {
+            return BadRequest($"El nombre '{arquero.Nombre}' ya está en uso por otro arquero o personaje.");
+        }
+
         _context.Arqueros.Add(arquero);
         await _context.SaveChangesAsync();
         return CreatedAtAction("GetPersonajes", new { id = arquero.Id }, arquero);
     }
 
     /// <summary>
-    /// Crea un nuevo personaje de clase Clérigo.
+    /// Crea un nuevo personaje de clase Clérigo con validación de nombre único.
     /// </summary>
     /// <remarks>
     /// <para><b>Autor:</b> Maria</para>
@@ -175,76 +196,103 @@ public class PersonajeController : ControllerBase
     [HttpPost("clerigo")]
     public async Task<ActionResult<Clerigo>> PostClerigo(Clerigo clerigo)
     {
+        if (await NombreExiste(clerigo.Nombre))
+        {
+            return BadRequest($"El nombre '{clerigo.Nombre}' ya está en uso por otro clérigo o personaje.");
+        }
+
         _context.Clerigos.Add(clerigo);
         await _context.SaveChangesAsync();
         return CreatedAtAction("GetPersonajes", new { id = clerigo.Id }, clerigo);
     }
 
     /// <summary>
-    /// Actualiza los datos de un personaje existente.
+    /// Actualiza los datos de un personaje existente utilizando una transacción atómica.
     /// </summary>
     /// <param name="id">ID del personaje a modificar.</param>
-    /// <param name="personaje">Datos actualizados.</param>
+    /// <param name="personaje">Objeto con los datos actualizados.</param>
+    /// <returns>NoContent si tiene éxito, NotFound si el ID no existe o BadRequest si los IDs no coinciden.</returns>
     /// <remarks>
     /// <para><b>Autor:</b> Maria</para>
+    /// Se implementa un bloque de transacción para asegurar que, ante cualquier fallo en la base de datos, 
+    /// se realice un rollback y no queden datos inconsistentes.
     /// </remarks>
     [HttpPut("{id}")]
     public async Task<IActionResult> PutPersonaje(int id, [FromBody] Personaje personaje)
     {
         if (id != personaje.Id)
         {
-            return BadRequest("El ID no coincide");
+            return BadRequest("El ID no coincide con el registro que intentas actualizar.");
         }
 
-        _context.Entry(personaje).State = EntityState.Modified;
+        using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
         {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!_context.Personajes.Any(e => e.Id == id))
+            var existe = await _context.Personajes.AnyAsync(p => p.Id == id);
+            if (!existe)
             {
-                return NotFound();
+                return NotFound($"No se puede actualizar: El personaje con ID {id} no existe.");
             }
-            else
-            {
-                throw;
-            }
-        }
 
-        return NoContent();
+            _context.Entry(personaje).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            return StatusCode(500, $"Error interno al actualizar: {ex.Message}. Se ha revertido la operación.");
+        }
     }
 
     /// <summary>
-    /// Elimina un personaje de la base de datos.
+    /// Elimina un personaje de la base de datos de forma segura.
     /// </summary>
     /// <param name="id">ID del personaje a eliminar.</param>
+    /// <returns>NoContent si se elimina, NotFound si no existe.</returns>
     /// <remarks>
     /// <para><b>Autor:</b> Maria</para>
+    /// El método incluye una verificación de existencia y un Rollback automático 
+    /// si la eliminación falla por restricciones de integridad.
     /// </remarks>
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeletePersonaje(int id)
     {
-        var personaje = await _context.Personajes.FindAsync(id);
-
-        if (personaje == null)
-        {
-            return NotFound($"No se encontró el personaje con ID {id}.");
-        }
-
-        _context.Personajes.Remove(personaje);
+        using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
         {
+            var personaje = await _context.Personajes.FindAsync(id);
+
+            if (personaje == null)
+            {
+                return NotFound($"No se encontró el personaje con ID {id}. Operación cancelada.");
+            }
+
+            _context.Personajes.Remove(personaje);
             await _context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+            return NoContent();
         }
         catch (Exception ex)
         {
-            return BadRequest($"Error al eliminar: {ex.Message}");
+            await transaction.RollbackAsync();
+            return BadRequest($"Error crítico al eliminar: {ex.Message}. La base de datos ha revertido los cambios.");
         }
+    }
 
-        return NoContent();
+    /// <summary>
+    /// Comprueba si un nombre ya existe en la base de datos (sin importar la clase del personaje).
+    /// </summary>
+    /// <remarks>
+    /// <b>Autor:</b> Maria
+    /// </remarks>
+    private async Task<bool> NombreExiste(string nombre)
+    {
+        return await _context.Personajes.AnyAsync(p => p.Nombre.ToLower() == nombre.ToLower());
     }
 }

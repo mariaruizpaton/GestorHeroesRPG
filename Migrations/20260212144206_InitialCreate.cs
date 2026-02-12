@@ -117,6 +117,13 @@ namespace GestorHeroesRPG.Migrations
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_character_name",
+                schema: "game",
+                table: "character",
+                column: "name",
+                unique: true);
         }
 
         /// <inheritdoc />

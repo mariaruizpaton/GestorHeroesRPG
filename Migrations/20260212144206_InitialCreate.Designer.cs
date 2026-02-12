@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GestorHeroesRPG.Migrations
 {
     [DbContext(typeof(GameDBContext))]
-    [Migration("20260206190457_InitialCreate")]
+    [Migration("20260212144206_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -59,6 +59,9 @@ namespace GestorHeroesRPG.Migrations
                         .HasColumnName("traits");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Nombre")
+                        .IsUnique();
 
                     b.ToTable("character", "game");
 
